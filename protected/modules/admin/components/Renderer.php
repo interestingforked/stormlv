@@ -33,7 +33,8 @@ class Renderer {
                     break;
             }
             if (isset($item['items']) && count($item['items'])) {
-                $this->renderRecursive($item['items'], $value, $renderType);
+                if (!($renderType == self::RENDER_OPTION_LIST && $item['multipage'] == 1))
+                    $this->renderRecursive($item['items'], $value, $renderType);
             }
         }
     }
@@ -58,7 +59,6 @@ class Renderer {
         echo '</td><td class="delete">';
         echo CHtml::link('View', array('/'.$item['slug']), array('target' => '_blank')).' ';
         echo CHtml::link('Edit', array('/admin/'.$item['controller'].'/edit/'.$item['id'])).' ';
-		echo CHtml::link('Translate', array('/admin/'.$item['controller'].'/translate/'.$item['id'])).' ';
         echo CHtml::link('Delete', array('/admin/'.$item['controller'].'/delete/'.$item['id']), array('class' => 'delete')).' ';
         echo '</td></tr>';
     }

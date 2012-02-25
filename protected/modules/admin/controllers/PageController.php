@@ -47,6 +47,10 @@ class PageController extends AdminController {
                     $attachments[] = $v;
                 }
             }
+            if ($pageModel->parent_id > 1) {
+                $parent = Page::model()->findByPk($pageModel->parent_id);
+                $pageModel->slug = $parent->slug.'/'.$pageModel->slug;
+            }
             
             $transaction = Yii::app()->db->beginTransaction();
             if ($pageModel->save()) {
@@ -54,7 +58,8 @@ class PageController extends AdminController {
                 $contentModel->module_id = $pageModel->id;
                 $contentModel->language = Yii::app()->params['defaultLanguage'];
                 
-                $contentModel->background = Attachment::model()->saveImage($contentModel->background, 'background');
+                if ($contentModel->background)
+                    $contentModel->background = Attachment::model()->saveImage($contentModel->background, 'background');
                 
                 if ($contentModel->save()) {
                     $result = Attachment::model()->saveAttachments($attachments, 'page', $pageModel->id, $pageModel->slug);
@@ -144,47 +149,6 @@ class PageController extends AdminController {
             'plugins' => $this->plugins,
             'title' => $contentModel->title,
             'attachmentModels' => $attachmentModels,
-        ));
-    }
-    
-    public function actionTranslate($id) {
-        $this->pageTitle = 'Pages / Translate page';
-        
-        $errors = array();
-        
-        $rootPage = Page::model()->findByPk(1);
-        $pages = $rootPage->getTableRows();
-        
-        $pageModel = Page::model()->findByPk($id);
-        $contentModel = Content::model()->getModuleContent('page', $id, 'lv');
-        
-        if (isset($_POST['Content'])) {
-            if ($contentModel->language != 'lv') {
-                $contentModel->isNewRecord = true;
-                $contentModel->id = null;
-            }
-            $contentModel->attributes = $_POST['Content'];
-            $contentModel->language = 'lv';
-            
-            $transaction = Yii::app()->db->beginTransaction();
-            if ($contentModel->save()) {
-                $transaction->commit();
-                $this->redirect(array('/admin/page'));
-            } else {
-                $transaction->rollback();
-                $errors = $contentModel->getErrors();
-            }
-        } else {
-            $contentModel->language = 'lv';
-        }
-
-        $this->render('translate', array(
-            'errors' => $errors,
-            'pages' => $pages,
-            'pageModel' => $pageModel,
-            'contentModel' => $contentModel,
-            'plugins' => $this->plugins,
-            'title' => $contentModel->title,
         ));
     }
     

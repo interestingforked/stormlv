@@ -505,6 +505,12 @@ class ProductController extends AdminController {
         $model->deleted = 1;
         $model->save();
 
+        $nodes = $model->productNodes;
+        foreach ($nodes as $node) {
+            $node->deleted = 1;
+            $node->save();
+        }
+        
         $this->redirect(array('/admin/product'));
     }
     
